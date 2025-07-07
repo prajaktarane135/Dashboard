@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from datetime import datetime
 
 # Load sample or user-provided data
 @st.cache_data
@@ -41,8 +42,15 @@ st.sidebar.title("Filters")
 selected_destinations = st.sidebar.multiselect("Select Destinations", df['Destination'].unique(), default=df['Destination'].unique())
 min_age, max_age = st.sidebar.slider("Age Range", int(df['Age'].min()), int(df['Age'].max()), (20, 50))
 
+start_date, end_date = st.sidebar.date_input("Booking Date Range", [df['Booking_Date'].min(), df['Booking_Date'].max()])
+min_rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, 4.0)
+
 # Filter Data
-df_filtered = df[(df['Destination'].isin(selected_destinations)) & (df['Age'] >= min_age) & (df['Age'] <= max_age)]
+df_filtered = df[(df['Destination'].isin(selected_destinations)) &
+                 (df['Age'] >= min_age) & (df['Age'] <= max_age) &
+                 (df['Booking_Date'] >= pd.to_datetime(start_date)) &
+                 (df['Booking_Date'] <= pd.to_datetime(end_date)) &
+                 (df['Rating'] >= min_rating)]
 
 # KPIs
 st.title("\U0001F30E Global Tours & Travels Dashboard")
@@ -90,6 +98,26 @@ with col7:
     fig_rating = px.histogram(df_filtered, x="Rating", title="Customer Ratings",
                               color_discrete_sequence=["#1f4e79"])
     st.plotly_chart(fig_rating, use_container_width=True)
+
+# Feedback Section
+st.markdown("### Feedback")
+feedback = st.text_area("Share your travel experience:")
+if st.button("Submit Feedback"):
+    st.success("Thank you for sharing!")
+
+# Download filtered data
+st.download_button("Download Filtered Data", data=df_filtered.to_csv(index=False), file_name="filtered_tours.csv")
+
+# Destination Comparison
+st.markdown("### Compare Two Destinations")
+colA, colB = st.columns(2)
+with colA:
+    dest1 = st.selectbox("Compare Destination 1", df['Destination'].unique(), key="dest1")
+with colB:
+    dest2 = st.selectbox("Compare Destination 2", df['Destination'].unique(), key="dest2")
+
+compare_df = df[df['Destination'].isin([dest1, dest2])]
+st.bar_chart(compare_df.groupby("Destination")["Bookings"].sum())
 
 # Data Table
 st.markdown("### Detailed Booking Data")
