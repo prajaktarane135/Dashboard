@@ -6,11 +6,24 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
+# Display a header image with a fancy title
+st.image("https://upload.wikimedia.org/wikipedia/commons/2/2d/Tourism_India.jpg", use_column_width=True)
+st.markdown("""
+    <h1 style='text-align: center; color: #1f4e79;'>Incredible India Explorer</h1>
+    <h4 style='text-align: center; color: #ffa500;'>Discover, Plan, and Experience Amazing Indian Destinations</h4>
+""", unsafe_allow_html=True)
+
 # Load sample or user-provided data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv")
-    df.rename(columns={"iata": "Destination", "cnt": "Bookings"}, inplace=True)
+    # Simulated Indian city data
+    data = {
+        'Destination': ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Jaipur', 'Agra', 'Goa', 'Varanasi'],
+        'Bookings': [150, 200, 180, 120, 160, 140, 90, 110, 220, 100],
+        'lat': [28.6139, 19.0760, 12.9716, 17.3850, 13.0827, 22.5726, 26.9124, 27.1767, 15.2993, 25.3176],
+        'long': [77.2090, 72.8777, 77.5946, 78.4867, 80.2707, 88.3639, 75.7873, 78.0081, 74.1240, 82.9739],
+    }
+    df = pd.DataFrame(data)
     df['Revenue'] = df['Bookings'] * 350  # dummy revenue
     df['Rating'] = (4 + (df['Bookings'] % 2) * 0.5)  # dummy rating
     df['Booking_Date'] = pd.date_range("2023-01-01", periods=len(df))
@@ -53,7 +66,7 @@ df_filtered = df[(df['Destination'].isin(selected_destinations)) &
                  (df['Rating'] >= min_rating)]
 
 # KPIs
-st.title("\U0001F30E Global Tours & Travels Dashboard")
+st.title("\U0001F30E Indian Tours & Travels Dashboard")
 st.markdown("### Key Performance Indicators")
 kpi1, kpi2, kpi3 = st.columns(3)
 kpi1.metric("Total Bookings", int(df_filtered['Bookings'].sum()))
@@ -64,7 +77,7 @@ kpi3.metric("Average Rating", round(df_filtered['Rating'].mean(), 2))
 chart1, chart2 = st.columns(2)
 with chart1:
     fig_map = px.scatter_geo(df_filtered, lat="lat", lon="long", hover_name="Destination",
-                             size="Bookings", projection="natural earth", title="Global Bookings Distribution",
+                             size="Bookings", projection="natural earth", title="Indian Bookings Distribution",
                              color_discrete_sequence=["#1f4e79"])
     st.plotly_chart(fig_map, use_container_width=True)
 
@@ -78,7 +91,7 @@ st.markdown("### Destination Rankings and Demographics")
 col4, col5 = st.columns(2)
 with col4:
     fig_dest = px.bar(df_filtered.groupby('Destination')["Bookings"].sum().sort_values(ascending=False).head(10).reset_index(),
-                      x='Destination', y='Bookings', title='Top 10 Destinations',
+                      x='Destination', y='Bookings', title='Top Indian Destinations',
                       color_discrete_sequence=["#1f4e79"])
     st.plotly_chart(fig_dest, use_container_width=True)
 
