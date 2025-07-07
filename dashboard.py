@@ -3,11 +3,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 # Load sample or user-provided data
 @st.cache_data
 def load_data():
-    # For demo, you can replace this with pd.read_csv('your_data.csv')
     df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv")
     df.rename(columns={"iata": "Destination", "cnt": "Bookings"}, inplace=True)
     df['Revenue'] = df['Bookings'] * 350  # dummy revenue
@@ -20,6 +20,22 @@ def load_data():
 # Load data
 df = load_data()
 
+# Apply custom theme colors
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #f4f7fa;
+    }
+    .css-1v0mbdj, .css-12oz5g7 {
+        color: #1f4e79;
+    }
+    .css-1d391kg {
+        background-color: #ffa500 !important;
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Sidebar Filters
 st.sidebar.title("Filters")
 selected_destinations = st.sidebar.multiselect("Select Destinations", df['Destination'].unique(), default=df['Destination'].unique())
@@ -30,37 +46,51 @@ df_filtered = df[(df['Destination'].isin(selected_destinations)) & (df['Age'] >=
 
 # KPIs
 st.title("\U0001F30E Global Tours & Travels Dashboard")
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Bookings", int(df_filtered['Bookings'].sum()))
-col2.metric("Total Revenue", f"${df_filtered['Revenue'].sum():,.0f}")
-col3.metric("Average Rating", round(df_filtered['Rating'].mean(), 2))
+st.markdown("### Key Performance Indicators")
+kpi1, kpi2, kpi3 = st.columns(3)
+kpi1.metric("Total Bookings", int(df_filtered['Bookings'].sum()))
+kpi2.metric("Total Revenue", f"${df_filtered['Revenue'].sum():,.0f}")
+kpi3.metric("Average Rating", round(df_filtered['Rating'].mean(), 2))
 
-# Booking Heatmap (simulated with coordinates)
-fig_map = px.scatter_geo(df_filtered, lat="lat", lon="long", hover_name="Destination",
-                         size="Bookings", projection="natural earth", title="Global Bookings Distribution")
-st.plotly_chart(fig_map)
+# Layout for charts
+chart1, chart2 = st.columns(2)
+with chart1:
+    fig_map = px.scatter_geo(df_filtered, lat="lat", lon="long", hover_name="Destination",
+                             size="Bookings", projection="natural earth", title="Global Bookings Distribution",
+                             color_discrete_sequence=["#1f4e79"])
+    st.plotly_chart(fig_map, use_container_width=True)
 
-# Bookings over Time
-fig_time = px.line(df_filtered, x='Booking_Date', y='Bookings', title='Bookings Over Time')
-st.plotly_chart(fig_time)
+with chart2:
+    fig_time = px.line(df_filtered, x='Booking_Date', y='Bookings', title='Bookings Over Time',
+                       color_discrete_sequence=["#ffa500"])
+    st.plotly_chart(fig_time, use_container_width=True)
 
 # Destination Rankings
-fig_dest = px.bar(df_filtered.groupby('Destination')["Bookings"].sum().sort_values(ascending=False).head(10).reset_index(),
-                  x='Destination', y='Bookings', title='Top 10 Destinations')
-st.plotly_chart(fig_dest)
+st.markdown("### Destination Rankings and Demographics")
+col4, col5 = st.columns(2)
+with col4:
+    fig_dest = px.bar(df_filtered.groupby('Destination')["Bookings"].sum().sort_values(ascending=False).head(10).reset_index(),
+                      x='Destination', y='Bookings', title='Top 10 Destinations',
+                      color_discrete_sequence=["#1f4e79"])
+    st.plotly_chart(fig_dest, use_container_width=True)
 
-# Age Distribution
-fig_age = px.histogram(df_filtered, x="Age", nbins=10, title="Traveler Age Distribution")
-st.plotly_chart(fig_age)
+with col5:
+    fig_age = px.histogram(df_filtered, x="Age", nbins=10, title="Traveler Age Distribution",
+                           color_discrete_sequence=["#ffa500"])
+    st.plotly_chart(fig_age, use_container_width=True)
 
-# Gender Pie
-fig_gender = px.pie(df_filtered, names='Gender', title='Gender Distribution')
-st.plotly_chart(fig_gender)
+# Gender and Ratings
+col6, col7 = st.columns(2)
+with col6:
+    fig_gender = px.pie(df_filtered, names='Gender', title='Gender Distribution',
+                        color_discrete_sequence=["#1f4e79", "#ffa500"])
+    st.plotly_chart(fig_gender, use_container_width=True)
 
-# Rating Distribution
-fig_rating = px.histogram(df_filtered, x="Rating", title="Customer Ratings")
-st.plotly_chart(fig_rating)
+with col7:
+    fig_rating = px.histogram(df_filtered, x="Rating", title="Customer Ratings",
+                              color_discrete_sequence=["#1f4e79"])
+    st.plotly_chart(fig_rating, use_container_width=True)
 
 # Data Table
-st.subheader("Detailed Booking Data")
-st.dataframe(df_filtered)
+st.markdown("### Detailed Booking Data")
+st.dataframe(df_filtered, use_container_width=True)
