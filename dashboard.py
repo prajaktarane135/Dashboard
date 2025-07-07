@@ -7,7 +7,8 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 # Display a header image with a fancy title
-st.image("https://upload.wikimedia.org/wikipedia/commons/2/2d/Tourism_India.jpg", use_column_width=True)
+st.image("https://upload.wikimedia.org/wikipedia/commons/2/2d/Tourism_India.jpg", use_container_width=True)
+#st.image("https://upload.wikimedia.org/wikipedia/commons/2/2d/Tourism_India.jpg", use_column_width=True)
 st.markdown("""
     <h1 style='text-align: center; color: #1f4e79;'>Incredible India Explorer</h1>
     <h4 style='text-align: center; color: #ffa500;'>Discover, Plan, and Experience Amazing Indian Destinations</h4>
